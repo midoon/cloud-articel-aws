@@ -1,45 +1,22 @@
-## Basic VPC and SUBNET
+## Bastion HOST
 
 ---
 
 #### Outline:
 
-- Penjelasan terkait VPC, Subnet, Routing Table, Internet Gateway
-- Apa keterkaitan antar komponen tersebut?
+- Penjelasan terkait Bastion HOst
 - Implementasi sederhana
 
 #### Penjelasan:
 
-- VPC: Merupakan jaringan virtual di AWS yang memungkinkan Anda untuk mengelola sumber daya AWS dalam lingkungan jaringan yang terisolasi secara logis. VPC berfungsi seperti jaringan tradisional di data center on-premises, di mana Anda dapat mengontrol pengaturan jaringan seperti alokasi alamat IP, subnet, routing, firewall, dan akses keamanan. [lebih lengkapnya...](https://docs.aws.amazon.com/id_id/vpc/latest/userguide/what-is-amazon-vpc.html)
-  <br>
-
-- Subnet: Merupakan sebuah rentatng alamat IP di VPC. subnet berfungsi untuk mengatur grup sumber daya ke dalam segmen jaringan yang lebih kecil berdasarkan wilayah geografis (Availability Zone) [lebih lengkapnya...](https://docs.aws.amazon.com/id_id/vpc/latest/userguide/configure-subnets.html)
-  <br>
-- Route Tabe: Merupakan seperangkat aturan, yang disebut rute, yang menentukan ke mana lalu lintas jaringan dari subnet atau gateway Anda diarahkan. [lebih lengkapnya..](https://docs.aws.amazon.com/id_id/vpc/latest/userguide/VPC_Route_Tables.html)
-  <br>
-- Internate Gateway: Merupakan sebuah gateway yang digunakan untuk mekanisme komunikasi antara VPC dan internet. [lebih lengkapnya...](https://docs.aws.amazon.com/id_id/vpc/latest/userguide/VPC_Internet_Gateway.html)
-
-#### Keterkaitan antar komponen
-
-- VPC sebagai jaringan utama:
-  Semua sumber daya seperti EC2 atau RDS dijalankan di dalam VPC.
-
-- Subnet sebagai subdivisi:
-  Subnet membagi VPC menjadi zona kecil untuk memisahkan resource berdasarkan fungsi:
-- Public Subnet untuk resource yang memerlukan akses langsung ke internet.
-- Private Subnet untuk resource yang hanya berkomunikasi secara internal.
-- Routing Table mengatur arah lalu lintas:
-  Routing Table menentukan jalur lalu lintas untuk setiap subnet:
-- Public Subnet diarahkan ke Internet Gateway.
-  Private Subnet diarahkan ke NAT Gateway untuk akses keluar saja.
-- Internet Gateway sebagai jembatan ke internet:
-  Internet Gateway memungkinkan resource di public subnet berkomunikasi langsung dengan internet.
+Bastion host merupakan sebuah server yang digunakan untuk mengkases resource di jaringan private.
+Server ini (bastion host) berfungsi jembatan antara user dengan resource yang tidak memiliki koneksi ke jaringan luar
 
 #### Contoh Implementasi
 
 Arsitektur:
 
-<!-- <img src="./img/02-aws-basic-vpc.drawio.png" alt="Deskripsi Gambar" width="600"> -->
+<img src="./img/03-aws-basic-bastionhost.png" alt="Deskripsi Gambar" width="600">
 
 _CREATE VPC_
 
@@ -114,6 +91,7 @@ BIKIN YANG VERSI PRIVATE SUBNET UNTUK ROUTE TABLE
 - Button: save association
 
 _CREATE RESOURCE IN VPC_
+
 EC2 for public subnet
 
 - bikin instance seperti biasa tetapi yang diubah pada bagian Network setting
@@ -121,5 +99,17 @@ EC2 for public subnet
 - Subnet: test-public-subnet-1a
 - Auto-assign public IP: enable
 - Firewall (security group): create security group
-- Security group name: test-ec2-SG
+- Security group name: sg-public-ec2
   - enamble SHH
+
+EC2 for private subnet
+
+- bikin instance seperti biasa tetapi yang diubah pada bagian Network setting
+- VPC: test-vpc
+- Subnet: test-private-subnet-1a
+- Auto-assign public IP: disable
+- Firewall (security group): create security group
+- Security group name: sg-private-ec2
+  - TYPE SSH:
+    - Source type: custom
+    - Source: 12.0.1.0/24 (IP bastion host)
